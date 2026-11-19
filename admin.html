@@ -465,8 +465,7 @@ const GH_OWNER = "ngarcez-burgee";
 const GH_REPO  = "gbr-data";
 let GH_PAT = "";
 
-const RESEND_API_KEY = "re_KxzoQJF6_McJ8fdrfZ5TjPCUK61QmpfpK";
-const FROM_EMAIL = "admin@burgeeregister.org";
+const MAIL_ENDPOINT = "https://burgeeregister.org/gbr_mail/send-confirmation.php";
 
 // ── Login overlay ─────────────────────────────────────────────
 function showLoginOverlay() {
@@ -1248,41 +1247,22 @@ function normalizeRegion(region, country) {
 
 async function sendConfirmationEmail(club) {
   if (!club.contact_email) return;
-  const greeting = club.contact_first ? `Ahoy ${club.contact_first},` : "Ahoy,";
-  const body = `${greeting}
-
-Thank you for submitting the ${club.name} burgee to the Global Burgee Register.
-
-We are pleased to confirm that your submission has been received and that the Register has been updated. Your club is now part of our growing directory of yacht and sailing clubs from around the world.
-
-We truly appreciate your collaboration in helping us build the most comprehensive burgee registry available. Contributions like yours are what make this resource valuable for the entire sailing community.
-
-If you have any questions or need to make any changes to the listing, please don't hesitate to reach out.
-
-Fair winds,
-
-The Global Burgee Register Team
-https://burgeeregister.org`;
-
   try {
-    const r = await fetch("https://api.resend.com/emails", {
+    const r = await fetch(MAIL_ENDPOINT, {
       method: "POST",
-      headers: {
-        "Authorization": `Bearer ${RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        from: `Global Burgee Register <${FROM_EMAIL}>`,
-        to: [club.contact_email],
-        subject: "Your Burgee Submission Has Been Accepted — Global Burgee Register",
-        text: body,
+        token: GH_PAT,
+        email: club.contact_email,
+        first: club.contact_first || "",
+        club: club.name,
       }),
     });
     if (r.ok) {
       console.log(`✓ Confirmation email sent to ${club.contact_email}`);
     } else {
-      const err = await r.json();
-      console.warn(`Email failed: ${err.message}`);
+      const err = await r.json().catch(() => ({}));
+      console.warn(`Email failed: ${err.error || r.status}`);
     }
   } catch(e) {
     console.warn(`Email error: ${e.message}`);
@@ -1297,7 +1277,7 @@ async function deployToServer() {
     const r = await fetch(url, {
       method: "POST",
       headers: ghHeaders(),
-      body: JSON.stringify({ ref: "master" }),
+      body: JSON.stringify({ ref: "main" }),
     });
     if (r.status === 204) {
       showMsg("table-msg", "✓ Deploy triggered — changes will be live in ~1 minute", "ok");
