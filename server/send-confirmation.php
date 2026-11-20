@@ -38,9 +38,12 @@ curl_setopt_array($ch, [
 ]);
 $res = curl_exec($ch);
 $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+$cerr = curl_error($ch);
 curl_close($ch);
+if ($res === false) fail(502, 'cannot reach GitHub: ' . $cerr);
+if ($code !== 200) fail(403, "GitHub check failed (status $code)");
 $repo = json_decode((string)$res, true);
-if ($code !== 200 || empty($repo['permissions']['push'])) fail(403, 'not authorised');
+if (isset($repo['permissions']) && empty($repo['permissions']['push'])) fail(403, 'token has no write access');
 
 $greeting = $first !== '' ? "Ahoy $first," : 'Ahoy,';
 $body = "$greeting
