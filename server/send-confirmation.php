@@ -34,6 +34,8 @@ $ch = curl_init("https://api.github.com/repos/$GH_OWNER/$GH_REPO");
 curl_setopt_array($ch, [
   CURLOPT_RETURNTRANSFER => true,
   CURLOPT_TIMEOUT => 15,
+  CURLOPT_FOLLOWLOCATION => true,
+  CURLOPT_MAXREDIRS => 3,
   CURLOPT_HTTPHEADER => ["Authorization: token $token", 'User-Agent: gbr-mailer', 'Accept: application/vnd.github+json'],
 ]);
 $res = curl_exec($ch);
