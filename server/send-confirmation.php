@@ -2,7 +2,7 @@
 // Sends the "submission accepted" email for the GBR admin page.
 // The Resend key lives in config.php on the server (never in the repo).
 
-$ALLOWED_ORIGIN = 'https://ardea-apps.github.io';
+$ALLOWED_ORIGIN = 'https://apps.garcez.net';
 $GH_OWNER = 'ngarcez-burgee';
 $GH_REPO  = 'gbr-data';
 
